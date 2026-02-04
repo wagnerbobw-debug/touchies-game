@@ -5,35 +5,531 @@
   <title>Touchies Jump</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* dein kompletter CSS-Block bleibt unverändert */
+    :root {
+      --bg-top: #ffb3e6;
+      --bg-mid: #d9a7ff;
+      --bg-bottom: #a8e6ff;
+      --touchie-white: #ffffff;
+      --touchie-glow: #ff7ac4;
+      --candy-pink: #ff9acb;
+      --candy-blue: #a8d8ff;
+      --ui-text: #ffffff;
+      --shadow-soft: rgba(0, 0, 0, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: radial-gradient(circle at top, #ffe6f7, #f5f5ff);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: var(--ui-text);
+    }
+
+    .game-wrapper {
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      box-shadow: 0 20px 40px var(--shadow-soft);
+      border-radius: 24px;
+      overflow: hidden;
+      background: linear-gradient(
+        180deg,
+        var(--bg-top),
+        var(--bg-mid),
+        var(--bg-bottom)
+      );
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      pointer-events: none;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .title {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 4px 12px var(--shadow-soft);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-bottom: 24px;
+    }
+
+    .tap-to-start {
+      font-size: 1.1rem;
+      padding: 10px 20px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 20px var(--shadow-soft);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    .tap-to-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px var(--shadow-soft);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .score-display {
+      position: absolute;
+      top: 12px;
+      left: 16px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-shadow: 0 3px 8px var(--shadow-soft);
+      z-index: 5;
+    }
+
+    .logo {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 6px 14px var(--shadow-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      z-index: 5;
+    }
+
+    .game-over-panel {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 18px 22px;
+      box-shadow: 0 16px 32px var(--shadow-soft);
+      pointer-events: auto;
+    }
+
+    .game-over-panel h2 {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      text-shadow: 0 3px 8px var(--shadow-soft);
+    }
+
+    .game-over-panel p {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .buttons-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      justify-content: center;
+    }
+
+    .btn {
+      font-size: 0.9rem;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 8px 18px var(--shadow-soft);
+      transition: transform 0.15s ease, box-shadow 0.15s ease,
+        opacity 0.15s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff9acb, #ff7ac4);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.85);
+      color: #ff7ac4;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px var(--shadow-soft);
+      opacity: 0.95;
+    }
+
+    @media (max-width: 768px) {
+      .game-wrapper {
+        max-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        aspect-ratio: 9 / 16;
+      }
+      .title {
+        font-size: 2rem;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div class="game-wrapper">
-    <canvas id="gameCanvas"></canvas>
 
-    <div class="score-display" id="scoreDisplay">0</div>
+<!-- START OVERLAY -->
+<div class="overlay" id="startOverlay" style="
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 9999;
+  color: white;
+  text-align: center;
+  font-family: sans-serif;
+">
+  <h1 style="margin-bottom: 20px;">Touchies Jump</h1>
 
-    <!-- Startscreen -->
-    <div class="overlay" id="startOverlay">
-      <div>
-        <h1 class="title">Touchies Jump</h1>
+  <button id="connectWalletBtn" style="
+    padding: 12px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    background: #ffcc00;
+    cursor: pointer;
+  ">
+    Wallet verbinden (MetaMask)
+  </button>
 
-        <button id="connectWalletBtn" style="
-          padding: 12px 20px;
-          font-size: 18px;
-          border-radius: 10px;
-          border: none;
-          background: #ffcc00;
-          cursor: pointer;
-          pointer-events: auto;
-        ">
-          Wallet verbinden (MetaMask)
-   </button>
+  <p id="walletDisplay" style="margin-top:10px; font-size:16px;">
+    Keine Wallet verbunden
+  </p>
 
-<!-- Wallet Anzeige -->
-<div id="walletDisplay" style="margin-top: 10px; font-size: 16px;">
+  <p id="tapToStart" style="
+    margin-top: 25px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+  ">
+    Tap to Start
+  </p>
+</div>
+
+<!-- GAME CANVAS -->
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<audio id="bgMusic" src="sphere.mp3" preload="auto"></audio>
+
+<div class="game-wrapper">
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="score-display" id="scoreDisplay">0</div>
+
+  <!-- Startscreen (zweites Overlay aus Block 2) -->
+  <div class="overlay" id="startOverlay">
+    <div>
+      <button id="connectWalletBtn" style="
+        padding: 12px 20px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: none;
+        background: #ffcc00;
+        cursor: pointer;
+        pointer-events: auto;
+      ">
+        Wallet verbinden (MetaMask)
+      </button>
+
+      <p id="walletDisplay" style="margin-top:10px; font-size:16px;">
+        Keine Wallet verbunden
+      </p>
+    </div>
+
+    <div class="subtitle">
+      Candy‑Sky, Kawaii‑Touchie & rosa Glow – tap zum Starten.
+    </div>
+    <button class="tap-to-start" id="startButton">Tap to Start</button>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="overlay hidden" id="gameOverOverlay">
+    <div class="game-over-panel">
+      <h2>Game Over</h2>
+      <p>Score: <span id="finalScore">0</span></p>
+      <p>Best: <span id="bestScore">0</span></p>
+      <div class="buttons-row">
+        <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+        <button class="btn btn-secondary" id="shareBtn">Share Score</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --- MetaMask Integration --- */
+const connectWalletBtn = document.getElementById("connectWalletBtn");
+const walletDisplay = document.getElementById("walletDisplay");
+
+async function connectWallet() {
+  if (typeof window.ethereum === "undefined") {
+    walletDisplay.textContent = "MetaMask nicht gefunden";
+    return;
+  }
+
+  try {
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts"
+    });
+
+    const account = accounts[0];
+    walletDisplay.textContent =
+      "Verbunden: " + account.substring(0, 6) + "..." + account.slice(-4);
+  } catch (err) {
+    walletDisplay.textContent = "Verbindung abgelehnt";
+    console.error(err);
+  }
+}
+
+connectWalletBtn.addEventListener("click", connectWallet);
+
+if (window.ethereum) {
+  window.ethereum.on("accountsChanged", (accounts) => {
+    if (accounts.length === 0) {
+      walletDisplay.textContent = "Keine Wallet verbunden";
+    } else {
+      walletDisplay.textContent =
+        "Verbunden: " + accounts[0].substring(0, 6) + "..." + accounts[0].slice(-4);
+    }
+  });
+}
+
+/* --- Game Setup --- */
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const startOverlay = document.getElementById("startOverlay");
+const gameOverOverlay = document.getElementById("gameOverOverlay");
+const startButton = document.getElementById("startButton");
+const playAgainBtn = document.getElementById("playAgainBtn");
+const shareBtn = document.getElementById("shareBtn");
+const scoreDisplay = document.getElementById("scoreDisplay");
+const finalScoreEl = document.getElementById("finalScore");
+const bestScoreEl = document.getElementById("bestScore");
+
+let width, height;
+let lastTime = 0;
+let gameRunning = false;
+let gameOver = false;
+
+let touchie;
+let pipes = [];
+let score = 0;
+let bestScore = 0;
+
+const gravity = 0.0018;
+const jumpStrength = -0.6;
+const pipeGapBase = 0.28;
+const pipeWidthRatio = 0.16;
+const pipeSpeedBase = 0.25;
+const pipeSpawnInterval = 1600;
+
+let pipeTimer = 0;
+
+const sounds = {
+  jump: null,
+  score: null,
+  crash: null,
+  music: null,
+};
+
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+  width = rect.width;
+  height = rect.height;
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function resetGame() {
+  gameRunning = false;
+  gameOver = false;
+  score = 0;
+  pipeTimer = 0;
+  pipes = [];
+
+  const touchieSize = Math.min(width, height) * 0.12;
+  touchie = {
+    x: width * 0.3,
+    y: height * 0.5,
+    radius: touchieSize / 2,
+    vy: 0,
+  };
+
+  scoreDisplay.textContent = "0";
+}
+
+function spawnPipe() {
+  const gapSize = height * pipeGapBase;
+  const minTop = height * 0.12;
+  const maxTop = height * 0.6;
+  const topHeight = minTop + Math.random() * (maxTop - minTop);
+
+  const pipeWidth = width * pipeWidthRatio;
+
+  pipes.push({
+    x: width + pipeWidth,
+    width: pipeWidth,
+    topHeight,
+    gapSize,
+    passed: false,
+  });
+}
+
+function update(delta) {
+  if (!gameRunning) return;
+
+  const dt = delta;
+
+  if (targetY !== null) {
+    touchie.y += (targetY - touchie.y) * 0.15;
+  }
+
+  if (touchie.y - touchie.radius < 0) {
+    touchie.y = touchie.radius;
+    touchie.vy = 0;
+  }
+  if (touchie.y + touchie.radius > height) {
+    touchie.y = height - touchie.radius;
+    endGame();
+  }
+
+  pipeTimer += dt;
+  if (pipeTimer > pipeSpawnInterval) {
+    spawnPipe();
+    pipeTimer = 0;
+  }
+
+  const pipeSpeed = (pipeSpeedBase * width) / 1000;
+
+  for (let i = pipes.length - 1; i >= 0; i--) {
+    const p = pipes[i];
+    p.x -= pipeSpeed * dt;
+
+    if (!p.passed && p.x + p.width < touchie.x) {
+      p.passed = true;
+      score++;
+      scoreDisplay.textContent = score;
+    }
+
+    if (p.x + p.width < -50) {
+      pipes.splice(i, 1);
+    }
+
+    const inX = touchie.x + touchie.radius > p.x && touchie.x - touchie.radius < p.x + p.width;
+    if (inX) {
+      const topBottom = p.topHeight;
+      const bottomTop = p.topHeight + p.gapSize;
+      if (touchie.y - touchie.radius < topBottom || touchie.y + touchie.radius > bottomTop) {
+        endGame();
+      }
+    }
+  }
+}
+
+function drawBackground() {
+  const grad = ctx.createLinearGradient(0, 0, 0, height);
+  grad.addColorStop(0, "#ffb3e6");
+  grad.addColorStop(0.5, "#d9a7ff");
+  grad.addColorStop(1, "#a8e6ff");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, width, height);
+
+  const cloudCount = 6;
+  for (let i = 0; i < cloudCount; i++) {
+    const cx = ((i * 1.7 + (Date.now() / 8000)) % 1) * width;
+    const cy = (0.1 + 0.15 * (i % 3)) * height;
+    const r = width * 0.08;
+
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.arc(cx + r * 0.7, cy + r * 0.2, r * 0.8, 0, Math.PI * 2);
+    ctx.arc(cx - r * 0.6, cy + r * 0.1, r * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const sparkleCount = 25;
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  for (let i = 0; i < sparkleCount; i++) {
+    const sx = ((i * 3.1 + (Date.now() / 9000)) % 1) * width;
+    const sy = ((i * 1.9 + (Date.now() / 11000)) % 1) * height;
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+}
+
+function drawPipes() {
+  pipes.forEach((p, index) => {
+    const t = index % 2 === 0 ? "#ff9acb" : "#a8d8ff";
+    ctx.fillStyle = t;
+    ctx.strokeStyle = "rgba(255,255,255,0.8)";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.roundRect(p.x, 0, p.width, p.topHeight, 16);
+    ctx.fill();
+    ctx.stroke();
+
+    const bottomHeight = height - (p.topHeight + p.gapSize);
+    ctx.beginPath();
+    ctx.roundRect(p.x, p.topHeight + p.gapSize, p.width, bottomHeight, 16);
+    ctx.fill();
+    ctx.stroke();
+  });
+}
+
+function drawTouchie() {
+  const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 400);
+  const glowRadius = touchie.radius * (1.6 + 0.2 * pulse);
+
+  const grad = ctx.createRadialGradient(
+    touchie.x,
+    touchie.y,
+    touchie.radius * 0.2,
+    touchie.x,
     Wallet: nicht verbunden
 </div>
 
@@ -552,6 +1048,7 @@
 <script src="touchies.js"></script>
 </body>
 </html>
+
 
 
 
