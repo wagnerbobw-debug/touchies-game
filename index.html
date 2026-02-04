@@ -197,7 +197,9 @@
           Wallet verbinden (MetaMask)
         </button>
 
-       <!-- Wallet Anzeige -->
+</button>
+
+<!-- Wallet Anzeige -->
 <div id="walletDisplay" style="margin-top: 10px; font-size: 16px;">
     Wallet: nicht verbunden
 </div>
@@ -216,7 +218,7 @@
     Claim TUIS
 </button>
 
-<!-- Leaderboard / History -->
+<!-- Leaderboard / History (OBERE BOX – bleibt bestehen) -->
 <pre id="historyBox" style="
     margin-top: 20px;
     background: #f5f5f5;
@@ -228,52 +230,55 @@
     Lade Daten...
 </pre>
 
-        <div class="subtitle">
-          Candy‑Sky, Kawaii‑Touchie & rosa Glow – tap zum Starten.
-        </div>
+<div class="subtitle">
+  Candy‑Sky, Kawaii‑Touchie & rosa Glow – tap zum Starten.
+</div>
 
-        <button class="tap-to-start" id="startButton">Tap to Start</button>
-      </div>
+<button class="tap-to-start" id="startButton">Tap to Start</button>
+</div>
+</div>
+
+<!-- Game Over -->
+<div class="overlay hidden" id="gameOverOverlay">
+  <div class="game-over-panel">
+    <h2>Game Over</h2>
+    <p>Score: <span id="finalScore">0</span></p>
+    <p>Best: <span id="bestScore">0</span></p>
+
+    <div class="buttons-row">
+      <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+      <button class="btn btn-secondary" id="shareBtn">Share Score</button>
     </div>
 
-    <!-- Game Over -->
-    <div class="overlay hidden" id="gameOverOverlay">
-      <div class="game-over-panel">
-        <h2>Game Over</h2>
-        <p>Score: <span id="finalScore">0</span></p>
-        <p>Best: <span id="bestScore">0</span></p>
+    <!-- Punkte & TUIS Info -->
+    <div style="margin-top:20px; text-align:center; color:white;">
+      <p>Gesamtpunkte: <span id="totalPointsDisplay">0</span></p>
+      <p>TUIS (1:10): <span id="tuis10Display">0</span></p>
+      <p>TUIS (1:100): <span id="tuis100Display">0</span></p>
 
-        <div class="buttons-row">
-          <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
-          <button class="btn btn-secondary" id="shareBtn">Share Score</button>
-        </div>
+      <h3 style="margin-top:15px;">History</h3>
 
-        <!-- Punkte & TUIS Info -->
-        <div style="margin-top:20px; text-align:center; color:white;">
-          <p>Gesamtpunkte: <span id="totalPointsDisplay">0</span></p>
-          <p>TUIS (1:10): <span id="tuis10Display">0</span></p>
-          <p>TUIS (1:100): <span id="tuis100Display">0</span></p>
+      <!-- UNTERE BOX – neue ID -->
+      <pre id="historyBoxGameOver" style="
+        background: rgba(255,255,255,0.2);
+        padding:10px;
+        border-radius:10px;
+        max-height:150px;
+        overflow-y:auto;
+      ">Noch keine History-Einträge.</pre>
 
-          <h3 style="margin-top:15px;">History</h3>
-          <pre id="historyBox" style="
-            background: rgba(255,255,255,0.2);
-            padding:10px;
-            border-radius:10px;
-            max-height:150px;
-            overflow-y:auto;
-          ">Noch keine History-Einträge.</pre>
-
-          <a href="https://www.four.meme/token/0x0007767df81a937c1792ea4523177e83372f4444?code=TEE34ZQNQ73E"
-            target="_blank"
-            style="display:inline-block; margin-top:15px; color:#ffcc00; font-weight:bold;">
-            ➜ TUIS Token auf Four.Meme ansehen
-          </a>
-        </div>
-      </div>
+      <a href="https://www.four.meme/token/0x0007767df81a937c1792ea4523177e83372f4444?code=TEE34ZQNQ73E"
+        target="_blank"
+        style="display:inline-block; margin-top:15px; color:#ffcc00; font-weight:bold;">
+        ➜ TUIS Token auf Four.Meme ansehen
+      </a>
     </div>
   </div>
+</div>
 
-  <audio id="bgMusic" src="sphere.mp3" preload="auto"></audio>
+</div>
+
+<audio id="bgMusic" src="sphere.mp3" preload="auto"></audio>
 
   <!-- FINALER BLOCK C -->
   <script>
@@ -710,6 +715,7 @@
 <script src="touchies.js"></script>
 </body>
 </html>
+
 
 
 
