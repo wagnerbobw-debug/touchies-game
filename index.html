@@ -22,6 +22,7 @@
       margin: 0;
       padding: 0;
     }
+
     body {
       background: radial-gradient(circle at top, #ffe6f7, #f5f5ff);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -116,23 +117,6 @@
       z-index: 5;
     }
 
-    .logo {
-      position: absolute;
-      top: 10px;
-      right: 16px;
-      font-size: 0.9rem;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: 0 6px 14px var(--shadow-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-weight: 700;
-      z-index: 5;
-    }
-
     .game-over-panel {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(16px);
@@ -187,115 +171,85 @@
       box-shadow: 0 10px 22px var(--shadow-soft);
       opacity: 0.95;
     }
-
-    @media (max-width: 768px) {
-      .game-wrapper {
-        max-width: 100%;
-        border-radius: 0;
-        box-shadow: none;
-        aspect-ratio: 9 / 16;
-      }
-      .title {
-        font-size: 2rem;
-      }
-    }
   </style>
 </head>
 
 <body>
+  <div class="game-wrapper">
+    <canvas id="gameCanvas"></canvas>
 
-<!-- START OVERLAY -->
-<div class="overlay" id="startOverlay" style="
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 9999;
-  color: white;
-  text-align: center;
-  font-family: sans-serif;
-">
-  <h1 style="margin-bottom: 20px;">Touchies Jump</h1>
+    <div class="score-display" id="scoreDisplay">0</div>
 
-  <button id="connectWalletBtn" style="
-    padding: 12px 20px;
-    font-size: 18px;
-    border-radius: 10px;
-    border: none;
-    background: #ffcc00;
-    cursor: pointer;
-  ">
-    Wallet verbinden (MetaMask)
-  </button>
+    <!-- Startscreen -->
+    <div class="overlay" id="startOverlay">
+      <div>
+        <h1 class="title">Touchies Jump</h1>
 
-  <p id="walletDisplay" style="margin-top:10px; font-size:16px;">
-    Keine Wallet verbunden
-  </p>
+        <button id="connectWalletBtn" style="
+          padding: 12px 20px;
+          font-size: 18px;
+          border-radius: 10px;
+          border: none;
+          background: #ffcc00;
+          cursor: pointer;
+          pointer-events: auto;
+        ">
+          Wallet verbinden (MetaMask)
+        </button>
 
-  <p id="tapToStart" style="
-    margin-top: 25px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-  ">
-    Tap to Start
-  </p>
-</div>
+        <p id="walletDisplay" style="margin-top:10px; font-size:16px;">
+          Keine Wallet verbunden
+        </p>
 
-<!-- GAME CANVAS -->
-<canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div class="subtitle">
+          Candy‑Sky, Kawaii‑Touchie & rosa Glow – tap zum Starten.
+        </div>
 
-<audio id="bgMusic" src="sphere.mp3" preload="auto"></audio>
-
-<div class="game-wrapper">
-  <canvas id="gameCanvas"></canvas>
-
-  <div class="score-display" id="scoreDisplay">0</div>
-
-  <!-- Startscreen (zweites Overlay aus Block 2) -->
-  <div class="overlay" id="startOverlay">
-    <div>
-      <button id="connectWalletBtn" style="
-        padding: 12px 20px;
-        font-size: 18px;
-        border-radius: 10px;
-        border: none;
-        background: #ffcc00;
-        cursor: pointer;
-        pointer-events: auto;
-      ">
-        Wallet verbinden (MetaMask)
-      </button>
-
-      <p id="walletDisplay" style="margin-top:10px; font-size:16px;">
-        Keine Wallet verbunden
-      </p>
+        <button class="tap-to-start" id="startButton">Tap to Start</button>
+      </div>
     </div>
 
-    <div class="subtitle">
-      Candy‑Sky, Kawaii‑Touchie & rosa Glow – tap zum Starten.
-    </div>
-    <button class="tap-to-start" id="startButton">Tap to Start</button>
-  </div>
+    <!-- Game Over -->
+    <div class="overlay hidden" id="gameOverOverlay">
+      <div class="game-over-panel">
+        <h2>Game Over</h2>
+        <p>Score: <span id="finalScore">0</span></p>
+        <p>Best: <span id="bestScore">0</span></p>
 
-  <!-- GAME OVER -->
-  <div class="overlay hidden" id="gameOverOverlay">
-    <div class="game-over-panel">
-      <h2>Game Over</h2>
-      <p>Score: <span id="finalScore">0</span></p>
-      <p>Best: <span id="bestScore">0</span></p>
-      <div class="buttons-row">
-        <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
-        <button class="btn btn-secondary" id="shareBtn">Share Score</button>
+        <div class="buttons-row">
+          <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+          <button class="btn btn-secondary" id="shareBtn">Share Score</button>
+        </div>
+
+        <!-- Punkte & TUIS Info -->
+        <div style="margin-top:20px; text-align:center; color:white;">
+          <p>Gesamtpunkte: <span id="totalPointsDisplay">0</span></p>
+          <p>TUIS (1:10): <span id="tuis10Display">0</span></p>
+          <p>TUIS (1:100): <span id="tuis100Display">0</span></p>
+
+          <h3 style="margin-top:15px;">History</h3>
+          <pre id="historyBox" style="
+            background: rgba(255,255,255,0.2);
+            padding:10px;
+            border-radius:10px;
+            max-height:150px;
+            overflow-y:auto;
+          ">Noch keine History-Einträge.</pre>
+
+          <a href="https://www.four.meme/token/0x0007767df81a937c1792ea4523177e83372f4444?code=TEE34ZQNQ73E"
+            target="_blank"
+            style="display:inline-block; margin-top:15px; color:#ffcc00; font-weight:bold;">
+            ➜ TUIS Token auf Four.Meme ansehen
+          </a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
+  <audio id="bgMusic" src="sphere.mp3" preload="auto"></audio>
+
+  <!-- FINALER BLOCK C -->
+  <script>
   // MetaMask
   const connectWalletBtn = document.getElementById("connectWalletBtn");
   const walletDisplay = document.getElementById("walletDisplay");
@@ -726,3 +680,6 @@
   updateTUISDisplay();
   requestAnimationFrame(loop);
 </script>
+
+</body>
+</html>
