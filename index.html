@@ -197,9 +197,36 @@
           Wallet verbinden (MetaMask)
         </button>
 
-        <p id="walletDisplay" style="margin-top:10px; font-size:16px;">
-          Keine Wallet verbunden
-        </p>
+       <!-- Wallet Anzeige -->
+<div id="walletDisplay" style="margin-top: 10px; font-size: 16px;">
+    Wallet: nicht verbunden
+</div>
+
+<!-- Claim Button -->
+<button id="claimBtn" style="
+    margin-top: 15px;
+    padding: 10px 18px;
+    background: #ffcc00;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+">
+    Claim TUIS
+</button>
+
+<!-- Leaderboard / History -->
+<pre id="historyBox" style="
+    margin-top: 20px;
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    overflow-x: auto;
+">
+    Lade Daten...
+</pre>
 
         <div class="subtitle">
           Candy‑Sky, Kawaii‑Touchie & rosa Glow – tap zum Starten.
@@ -683,5 +710,6 @@
 <script src="touchies.js"></script>
 </body>
 </html>
+
 
 
